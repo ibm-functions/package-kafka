@@ -156,6 +156,17 @@ class ConsumerProcess (Process):
         if self.isMessageHub:
             self.username = params["username"]
             self.password = params["password"]
+            self.kafkaAdminUrl = params['kafka_admin_url']
+
+            try:
+                auth = self.password if self.username.lower() == 'token' else self.username + self.password
+                response = requests.get(self.kafkaAdminUrl, headers={'X-Auth-Token': auth}, timeout=60.0, verify=check_ssl)
+
+                if response.status_code == 403:
+                    logging.info("[{}] Invalid Kafka auth, disabling trigger... {}".format(self.trigger, response.status_code))
+                    self.__disableTrigger(response.status_code, 'Automatically disabled due to invalid Kafka credentials.')
+            except requests.exceptions.RequestException as e:
+                logging.info("[{}] Exception during Kafka auth, continuing... {}".format(self.trigger, e))
 
         if 'isIamKey' in params and params['isIamKey'] == True:
             self.authHandler = IAMAuth(params['authKey'], params['iamUrl'])
@@ -439,13 +450,13 @@ class ConsumerProcess (Process):
                         self.consumer.commit(offsets=self.__getOffsetList(messages), async=False)
                         retry = False
 
-    def __disableTrigger(self, status_code):
+    def __disableTrigger(self, status_code, message='Automatically disabled after receiving a {} status code when firing the trigger.'):
         self.setDesiredState(Consumer.State.Disabled)
 
         # when failing to establish a database connection, mark the consumer as dead to restart the consumer
         try:
             self.database = Database()
-            self.database.disableTrigger(self.trigger, status_code)
+            self.database.disableTrigger(self.trigger, status_code, message)
         except Exception as e:
             logging.error('[{}] Uncaught exception: {}'.format(self.trigger, e))
             self.__recordState(Consumer.State.Dead)
@@ -566,7 +577,7 @@ class ConsumerProcess (Process):
         logging.info('[{}] Completed partition assignment. Connected to broker(s)'.format(self.trigger))
 
         if self.currentState() == Consumer.State.Initializing and self.__shouldRun():
-            logging.info('[{}] Setting consumer state to runnning.'.format(self.trigger))
+            logging.info('[{}] Setting consumer state to running.'.format(self.trigger))
             self.__recordState(Consumer.State.Running)
 
     def __on_revoke(self, consumer, partitions):
