@@ -499,54 +499,35 @@ class ConsumerProcess (Process):
 
         return offsets
 
-
     def __getUTF8Encoding(self, value):
         try:
             value.decode('utf-8')
         except UnicodeDecodeError:
             try:
-                logging.debug('[{}] Value is not UTF-8 encoded. Attempting encoding... 1'.format(self.trigger))
+                logging.debug('[{}] Value is not UTF-8 encoded (UnicodeDecodeError). Attempting encoding... '.format(self.trigger))
                 value = value.encode('utf-8')
             except UnicodeDecodeError:
-                logging.debug('[{}] Value contains non-unicode bytes. Replacing invalid bytes. 1a'.format(self.trigger))
+                logging.debug('[{}] Value contains non-unicode bytes (UnicodeDecodeError). Replacing invalid bytes.'.format(self.trigger))
                 value = str(value, errors='replace').encode('utf-8')
             except AttributeError:
-                logging.debug('[{}] Value contains non-unicode bytes. Replacing invalid bytes. 1b'.format(self.trigger))
+                logging.debug('[{}] Value contains non-unicode bytes (AttributeError). Replacing invalid bytes.'.format(self.trigger))
                 value = str(value, errors='replace').encode('utf-8')
         except AttributeError:
             try:
-                logging.debug('[{}] Value is not UTF-8 encoded. Attempting encoding... 2'.format(self.trigger))
+                logging.debug('[{}] Value is not UTF-8 encoded (AttributeError). Attempting encoding...'.format(self.trigger))
                 value = value.encode('utf-8')
             except UnicodeDecodeError:
-                logging.debug('[{}] Value contains non-unicode bytes. Replacing invalid bytes. 2a'.format(self.trigger))
+                logging.debug('[{}] Value contains non-unicode bytes (UnicodeDecodeError). Replacing invalid bytes.'.format(self.trigger))
                 value = str(value, errors='replace').encode('utf-8')
             except AttributeError:
-                logging.debug('[{}] Value contains non-unicode bytes. Replacing invalid bytes. 2b'.format(self.trigger))
+                logging.debug('[{}] Value contains non-unicode bytes (AttributeError). Replacing invalid bytes.'.format(self.trigger))
                 value = str(value, errors='replace').encode('utf-8')
 
         return value
 
-    #def __getUTF8Encoding(self, value):
-    #   try:
-    #       value.decode('utf-8')
-    #   except UnicodeDecodeError:
-    #       try:
-    #           logging.debug('[{}] Value is not UTF-8 encoded. Attempting encoding...'.format(self.trigger))
-    #           value = value.encode('utf-8')
-    #       except UnicodeDecodeError:
-    #           logging.debug('[{}] Value contains non-unicode bytes. Replacing invalid bytes.'.format(self.trigger))
-    #           value = unicode(value, errors='replace').encode('utf-8')
-    #   except AttributeError:
-    #       logging.debug('[{}] Cannot decode a NoneType message value'.format(self.trigger))
-    #
-    #  return value*/
-
-
     def __encodeMessageIfNeeded(self, value):
-        logging.info('[{}] message: "{}"'.format(self.trigger, value))
-
         if value is None:
-            logging.info('[{}] message is None, skipping encoding.'.format(self.trigger))
+            logging.debug('[{}] message is None, skipping encoding.'.format(self.trigger))
             return value
 
         value = self.__getUTF8Encoding(value)
@@ -564,7 +545,7 @@ class ConsumerProcess (Process):
                 return value
         elif self.encodeValueAsBase64:
             try:
-                parsed = base64.b64encode(value)
+                parsed = base64.b64encode(value).decode('utf-8')
                 logging.debug('[{}] Successfully encoded a binary message.'.format(self.trigger))
                 return parsed
             except:
@@ -574,21 +555,19 @@ class ConsumerProcess (Process):
             # If message is not None it is encoded here. json.dumps will error when called with encoded argument
             value = value.decode('utf-8')
 
-        logging.debug('[{}] Returning un-encoded message'.format(self.trigger))
+        logging.debug('[{}] Returning encoded message'.format(self.trigger))
         return value
 
     def __encodeKeyIfNeeded(self, key):
-        logging.info('[{}] key: "{}"'.format(self.trigger, key))
-
         if key is None:
-            logging.info('[{}] key is None, skipping encoding.'.format(self.trigger))
+            logging.debug('[{}] key is None, skipping encoding.'.format(self.trigger))
             return key
 
         key = self.__getUTF8Encoding(key)
 
         if self.encodeKeyAsBase64:
             try:
-                parsed = base64.b64encode(key)
+                parsed = base64.b64encode(key).decode('utf-8')
                 logging.debug('[{}] Successfully encoded a binary key.'.format(self.trigger))
                 return parsed
             except:
@@ -598,7 +577,7 @@ class ConsumerProcess (Process):
             # If key is not None it is encoded here. json.dumps will error when called with encoded argument
             key = key.decode('utf-8')
 
-        logging.debug('[{}] Returning un-encoded key'.format(self.trigger))
+        logging.debug('[{}] Returning encoded key'.format(self.trigger))
         return key
 
     def __on_assign(self, consumer, partitions):
