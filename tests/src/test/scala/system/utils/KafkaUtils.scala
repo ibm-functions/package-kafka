@@ -17,14 +17,11 @@
 
 package system.utils
 
-import java.util.HashMap
 import java.util.Properties
 import java.util.concurrent.{TimeUnit, TimeoutException}
 
 import io.restassured.RestAssured
 import io.restassured.config.{RestAssuredConfig, SSLConfig}
-import javax.security.auth.login.Configuration
-import javax.security.auth.login.AppConfigurationEntry
 import org.apache.kafka.clients.producer.KafkaProducer
 
 import scala.collection.mutable.ListBuffer
@@ -147,12 +144,18 @@ object KafkaUtils {
 
     def asKafkaProducerProps(props : Map[String,Object]) : Properties = {
         val requiredKeys = List("brokers",
-                                "user",
-                                "password",
                                 "key.serializer",
                                 "value.serializer",
                                 "security.protocol",
-                                "max.request.size")
+                                "max.request.size",
+                                "ssl.protocol",
+                                "client.dns.lookup",
+                                "sasl.mechanism",
+                                "ssl.enabled.protocols",
+                                "acks",
+                                "ssl.endpoint.identification.algorithm",
+                                "sasl.jaas.config",
+                                )
 
         val propertyMap = props.filterKeys(
             requiredKeys.contains(_)
@@ -185,12 +188,20 @@ object KafkaUtils {
         // initialize the set of tuples to go into the resulting Map
         val user = ("user", credentials.get("user").getAsString())
         val password = ("password", credentials.get("password").getAsString())
-        val kafka_admin_url = ("kafka_admin_url", credentials.get("kafka_admin_url").getAsString())
-        val api_key = ("api_key", credentials.get("api_key").getAsString())
-        val security_protocol = ("security.protocol", "SASL_SSL");
         val keySerializer = ("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         val valueSerializer = ("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        val maxRequestSize = ("max.request.size", "3000000");
+        val security_protocol = ("security.protocol", "SASL_SSL");
+        val maxRequestSize = ("max.request.size", "3000000")
+        val kafka_admin_url = ("kafka_admin_url", credentials.get("kafka_admin_url").getAsString())
+
+        val ssl_protocol = ("ssl.protocol", "TLSv1.2");
+        val client_dns = ("client.dns.lookup","use_all_dns_ips");
+        val sasl_mechanism = ("sasl.mechanism","PLAIN");
+        val ssl_enabled_protocol = ("ssl.enabled.protocols", "TLSv1.2");
+        val acks = ("acks", "all");
+        val endpoint_algo = ("ssl.endpoint.identification.algorithm","HTTPS");
+        val jaas_config = ("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"token\" password=\""+ credentials.get("api_key").getAsString() +"\";");
+        
         var brokerList = new ListBuffer[String]()
         val jsonArray = credentials.get("kafka_brokers_sasl").getAsJsonArray()
         val brokerIterator = jsonArray.iterator()
@@ -198,26 +209,7 @@ object KafkaUtils {
             val current = brokerIterator.next().getAsString
             brokerList += current
         }
-
         val brokers = ("brokers", brokerList.toList)
-
-        System.setProperty("java.security.auth.login.config", "")
-        setMessageHubSecurityConfiguration(user._2, password._2)
-
-        Map(user, password, kafka_admin_url, api_key, brokers, security_protocol, keySerializer, valueSerializer, maxRequestSize)
-    }
-
-    private def setMessageHubSecurityConfiguration(user: String, password: String) = {
-        val map = new HashMap[String, String]()
-        map.put("serviceName", "kafka")
-        map.put("username", user)
-        map.put("password", password)
-        Configuration.setConfiguration(new Configuration()
-        {
-            def getAppConfigurationEntry(name: String): Array[AppConfigurationEntry] = Array(
-    	          new AppConfigurationEntry (
-    	              "com.ibm.messagehub.login.MessageHubLoginModule",
-     			          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, map))
-        })
+        Map(user, password, kafka_admin_url, brokers, security_protocol, keySerializer, valueSerializer, maxRequestSize, ssl_protocol, client_dns, sasl_mechanism, ssl_enabled_protocol, acks, endpoint_algo, jaas_config)
     }
 }
