@@ -263,6 +263,7 @@ class ConsumerProcess (Process):
                     retry = False
 
                 retry_ct += 1
+                time.sleep(0.5)
                 if retry_ct == self.max_retries:
                     retry = False
 
