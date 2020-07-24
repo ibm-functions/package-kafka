@@ -60,7 +60,7 @@ class Database:
             self.client.disconnect()
             self.client = None
 
-    def disableTrigger(self, triggerFQN, status_code, message='Automatically disabled after receiving a {} status code when firing the trigger.'):
+    def disableTrigger(self, triggerFQN, status_code, message):
         try:
             document = self.database[triggerFQN]
 

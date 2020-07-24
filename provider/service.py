@@ -113,6 +113,7 @@ class Service (Thread):
                             self.createAndRunConsumer(document)
                         else:
                             logging.info("[{}] Found a new trigger, but is assigned to another worker: {}".format(change["id"], document["worker"]))
+
                     else:
                         existingConsumer = self.consumers.getConsumerForTrigger(change["id"])
 
@@ -181,10 +182,12 @@ class Service (Thread):
         # Create a representation for this trigger, even if it is disabled
         # This allows it to appear in /health as well as allow it to be deleted
         # Creating this object is lightweight and does not initialize any connections
+
+        # TODO: don't want to run the process...
         consumer = Consumer(triggerFQN, doc)
         self.consumers.addConsumerForTrigger(triggerFQN, consumer)
 
-        if self.__isTriggerDocActive(doc):
+        if self.__isTriggerDocActive(doc) and consumer.desiredState() != Consumer.State.Disabled:
             logging.info('[{}] Trigger was determined to be active, starting...'.format(triggerFQN))
             consumer.start()
         else:
