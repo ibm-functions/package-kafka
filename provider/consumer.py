@@ -255,9 +255,9 @@ class ConsumerProcess (Process):
 
     def run(self):
         try:
-            retry = True 
+            retry = True
             retry_ct = 0
-            while retry: 
+            while retry:
                 self.consumer = self.__createConsumer()
                 if self.__isRunning():
                     retry = False
