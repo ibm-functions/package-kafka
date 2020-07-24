@@ -216,6 +216,9 @@ class ConsumerProcess (Process):
     def __shouldRun(self):
         return self.desiredState() == Consumer.State.Running
 
+    def __isRunning(self):
+        return self.sharedDictionary['desiredState'] == Consumer.State.Running
+
     def lastPoll(self):
         return self.sharedDictionary['lastPoll']
 
@@ -252,9 +255,21 @@ class ConsumerProcess (Process):
 
     def run(self):
         try:
-            self.consumer = self.__createConsumer()
+            retry = True 
+            retry_ct = 0
+            while retry: 
+                self.consumer = self.__createConsumer()
+                if self.__isRunning():
+                    retry = False
 
-            while self.__shouldRun():
+                retry_ct += 1
+                if retry_ct == self.max_retries:
+                    retry = False
+
+            if not self.__isRunning():
+                self.__disableTrigger(500)
+
+            while self.__shouldRun() and self.__isRunning():
                 messages = self.__pollForMessages()
 
                 if len(messages) > 0:
