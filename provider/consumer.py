@@ -267,6 +267,7 @@ class ConsumerProcess (Process):
                     retry = False
 
             if not self.__isRunning():
+                logging.error('Consumer unable to subscribe to topic. Disabling trigger...')
                 self.__disableTrigger(500)
 
             while self.__shouldRun() and self.__isRunning():
