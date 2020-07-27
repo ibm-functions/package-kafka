@@ -42,7 +42,7 @@ local_dev = os.getenv('LOCAL_DEV', 'False')
 payload_limit = int(os.getenv('PAYLOAD_LIMIT', 900000))
 check_ssl = (local_dev == 'False')
 seconds_in_day = 86400
-non_existent_topic_status_code = 404 
+non_existent_topic_status_code = 404
 processingManager = Manager()
 
 
@@ -314,7 +314,7 @@ class ConsumerProcess (Process):
                              })
 
             consumer = KafkaConsumer(config)
-            logging.info("listing topics...")
+            logging.info("[{}] listing topics...".format(self.trigger))
             topic_metadata = consumer.list_topics()
             if topic_metadata.topics.get(self.topic) is None:
                 logging.info("[{}] topic [{}] does not exists. Disabling trigger.".format(self.trigger, self.topic))
