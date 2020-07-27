@@ -157,6 +157,7 @@ class ConsumerProcess (Process):
         if self.isMessageHub:
             self.username = params["username"]
             self.password = params["password"]
+            self.kafkaAdminUrl = params['kafka_admin_url']
 
         if 'isIamKey' in params and params['isIamKey'] == True:
             self.authHandler = IAMAuth(params['authKey'], params['iamUrl'])
@@ -312,6 +313,17 @@ class ConsumerProcess (Process):
                                 'sasl.password': self.password,
                                 'security.protocol': 'sasl_ssl'
                              })
+
+            logging.info("[{}] verifyiing credentials...".format(self.trigger))
+            try:
+                response = requests.get(self.kafkaAdminUrl, auth=(self.username.lower(), self.password), timeout=60.0, verify=check_ssl)
+                if response.status_code == 403:
+                    logging.info("[{}] Invalid event stream auth, disabling trigger... {}".format(self.trigger, response.status_code))
+                    self.__disableTrigger(response.status_code)
+                else:
+                    logging.info("[{}] Supplied credentials are valid.".format(self.trigger))
+            except requests.exceptions.RequestException as e:
+                logging.info("[{}] Exception during Kafka auth, continuing... {}".format(self.trigger, e))
 
             consumer = KafkaConsumer(config)
             logging.info("[{}] listing topics...".format(self.trigger))
