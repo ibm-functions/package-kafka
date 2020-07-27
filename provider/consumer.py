@@ -314,6 +314,7 @@ class ConsumerProcess (Process):
                              })
 
             consumer = KafkaConsumer(config)
+            loggin.info("listing topics...")
             topic_metadata = consumer.list_topics()
             if topic_metadata.topics.get(self.topic) is None:
                 logging.info("[{}] topic [{}] does not exists. Disabling trigger.".format(self.trigger, self.topic))
