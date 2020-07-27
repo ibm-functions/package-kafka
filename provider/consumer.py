@@ -296,6 +296,7 @@ class ConsumerProcess (Process):
 
     def __createConsumer(self):
         if self.__shouldRun():
+            logging.info('[{}] brokers is: [{}]'.format(self.trigger, self.brokers))
             config = {'metadata.broker.list': ','.join(self.brokers),
                         'group.id': self.trigger,
                         'default.topic.config': {'auto.offset.reset': 'latest'},
@@ -321,7 +322,7 @@ class ConsumerProcess (Process):
         messages = []
         totalPayloadSize = 0
         batchMessages = True
-
+        logging.info('[{}] should run [{}], batchMessages [{}] and secondsSinceLastPoll() [{}]'.format(self.trigger, self.__shouldRun(), batchMessages, (self.secondsSinceLastPoll() < 2)))
         if self.__shouldRun():
             while batchMessages and (self.secondsSinceLastPoll() < 2):
                 if self.queuedMessage != None:
@@ -329,12 +330,16 @@ class ConsumerProcess (Process):
                     message = self.queuedMessage
                     self.queuedMessage = None
                 else:
+                    logging.info('[{}] starts polling and time is [{}]'.format(self.trigger, datetime.now()))
                     message = self.consumer.poll(1.0)
+                    logging.info('[{}] finished polling and time is [{}]'.format(self.trigger, datetime.now()))
 
                 if self.secondsSinceLastPoll() < 0:
                     logging.info('[{}] Completed first poll'.format(self.trigger))
 
+                logging.info('[{}] polled message, message is not None [{}]'.format(self.trigger, (message is not None)))
                 if (message is not None):
+                    logging.info('[{}] message error happened? [{}]'.format(self.trigger, (not message.error())))
                     if not message.error():
                         logging.debug("Consumed message: {}".format(str(message)))
                         messageSize = self.__sizeMessage(message)
@@ -349,19 +354,21 @@ class ConsumerProcess (Process):
                             # in any case, we need to stop batching now
                             batchMessages = False
                         else:
+                            logging.info('[{}] batching up message'.format(self.trigger))
                             totalPayloadSize += messageSize
                             messages.append(message)
                     elif message.error().code() != KafkaError._PARTITION_EOF:
                         logging.error('[{}] Error polling: {}'.format(self.trigger, message.error()))
                         batchMessages = False
                     else:
+                        logging.info('[{}] message error details [{}]'.format(self.trigger, message.error()))
                         logging.debug('[{}] No more messages. Stopping batch op.'.format(self.trigger))
                         batchMessages = False
                 else:
-                    logging.debug('[{}] message was None. Stopping batch op.'.format(self.trigger))
+                    logging.info('[{}] message was None. Stopping batch op.'.format(self.trigger))
                     batchMessages = False
 
-        logging.debug('[{}] Completed poll'.format(self.trigger))
+        logging.info('[{}] Completed poll'.format(self.trigger))
 
         if len(messages) > 0:
             logging.info("[{}] Found {} messages with a total size of {} bytes".format(self.trigger, len(messages), totalPayloadSize))
