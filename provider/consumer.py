@@ -42,7 +42,7 @@ local_dev = os.getenv('LOCAL_DEV', 'False')
 payload_limit = int(os.getenv('PAYLOAD_LIMIT', 900000))
 check_ssl = (local_dev == 'False')
 seconds_in_day = 86400
-
+non_existent_topic_status_code = 404 
 processingManager = Manager()
 
 
@@ -314,6 +314,11 @@ class ConsumerProcess (Process):
                              })
 
             consumer = KafkaConsumer(config)
+            topic_metadata = consumer.list_topics()
+            if topic_metadata.topics.get(self.topic) is None:
+                logging.info("[{}] topic [{}] does not exists. Disabling trigger.".format(self.trigger, self.topic))
+                self.__disableTrigger(non_existent_topic_status_code)
+
             consumer.subscribe([self.topic], self.__on_assign, self.__on_revoke)
             logging.info("[{}] Now listening in order to fire trigger".format(self.trigger))
             return consumer
@@ -337,7 +342,7 @@ class ConsumerProcess (Process):
                 if self.secondsSinceLastPoll() < 0:
                     logging.info('[{}] Completed first poll'.format(self.trigger))
 
-                logging.info('[{}] polled message, message is not None [{}]'.format(self.trigger, (message is not None)))
+                logging.info('[{}] polled message, message is not None: [{}]'.format(self.trigger, (message is not None)))
                 if (message is not None):
                     logging.info('[{}] message error happened? [{}]'.format(self.trigger, (not message.error())))
                     if not message.error():
