@@ -316,7 +316,6 @@ class ConsumerProcess (Process):
                              })
 
             logging.info("[{}] verifyiing credentials...".format(self.trigger))
-            
             #first to check whether users are using old event stream instance
             if 'messagehub' in self.kafkaAdminUrl:
                 logging.info('[{}] references an deprecated event stream instance.'.format(self.trigger))
