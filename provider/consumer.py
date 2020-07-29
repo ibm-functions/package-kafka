@@ -318,8 +318,8 @@ class ConsumerProcess (Process):
             logging.info("[{}] verifying credentials...".format(self.trigger))
             #first to check whether users are using old event stream instance
             if 'messagehub' in self.kafkaAdminUrl:
-                msg = '[{}] references an deprecated event stream instance. Status code {}. Disabling the trigger...'
-                logging.info(msg.format(self.trigger, invalid_credential_status_code))
+                msg = '[{}] references an deprecated event stream instance. Status code {}. Disabling the trigger...'.format(self.trigger, invalid_credential_status_code)
+                logging.info(msg)
                 self.__disableTrigger(invalid_credential_status_code, msg)
                 return None
 
@@ -327,15 +327,15 @@ class ConsumerProcess (Process):
                 authURL = self.kafkaAdminUrl + '/admin/topics'
                 response = requests.get(authURL, auth=(self.username.lower(), self.password), timeout=60.0, verify=check_ssl)
                 if response.status_code == 403:
-                    msg = '[{}] contains invalid event stream auth. Status code {}. Disabling trigger...'
-                    logging.info(msg.format(self.trigger, response.status_code))
+                    msg = '[{}] contains invalid event stream auth. Status code {}. Disabling trigger...'.format(self.trigger, response.status_code)
+                    logging.info(msg)
                     self.__disableTrigger(response.status_code, msg)
                     return None
                 else:
                     logging.info("[{}] Supplied credentials are valid.".format(self.trigger))
             except requests.exceptions.RequestException as e:
-                msg = '[{}] Exception occurred during verifying event stream auth: [{}]. Status code {}. Disabling trigger...'
-                logging.info(msg.format(self.trigger, e, invalid_credential_status_code))
+                msg = '[{}] Exception occurred during verifying event stream auth: [{}]. Status code {}. Disabling trigger...'.format(self.trigger, e, invalid_credential_status_code)
+                logging.info(msg)
                 self.__disableTrigger(invalid_credential_status_code, msg)
                 return None
 
@@ -343,8 +343,8 @@ class ConsumerProcess (Process):
             logging.info("[{}] listing topics...".format(self.trigger))
             topic_metadata = consumer.list_topics()
             if topic_metadata.topics.get(self.topic) is None:
-                msg = '[{}] topic [{}] does not exists. Status code {}. Disabling trigger.'
-                logging.info(msg.format(self.trigger, self.topic, non_existent_topic_status_code))
+                msg = '[{}] topic [{}] does not exists. Status code {}. Disabling trigger.'.format(self.trigger, self.topic, non_existent_topic_status_code)
+                logging.info(msg)
                 self.__disableTrigger(non_existent_topic_status_code, msg)
                 return None
 
@@ -456,15 +456,15 @@ class ConsumerProcess (Process):
                         retry = False
                     elif self.__shouldDisable(status_code, response.headers):
                         retry = False
-                        msg = '[{}] Error talking to OpenWhisk, status code {}'
-                        logging.error(msg.format(self.trigger, status_code))
+                        msg = '[{}] Error talking to OpenWhisk, status code {}'.format(self.trigger, status_code)
+                        logging.error(msg)
                         self.__dumpRequestResponse(response)
                         self.__disableTrigger(status_code, msg)
                 except requests.exceptions.RequestException as e:
                     logging.error('[{}] Error talking to OpenWhisk: {}'.format(self.trigger, e))
                 except AuthHandlerException as e:
-                    msg = '[{}] Encountered an exception from auth handler, status code {}'
-                    logging.error(msg.format(self.trigger, e.response.status_code))
+                    msg = '[{}] Encountered an exception from auth handler, status code {}'.format(self.trigger, e.response.status_code)
+                    logging.error(msg)
                     self.__dumpRequestResponse(e.response)
 
                     if self.__shouldDisable(e.response.status_code, e.response.headers):
