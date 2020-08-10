@@ -318,7 +318,6 @@ class ConsumerProcess (Process):
             #     consumer.subscribe([self.topic], self.__on_assign, self.__on_revoke)
             #     logging.info("[{}] Now listening in order to fire trigger".format(self.trigger))
             #     return consumer
-                
             # logging.info("[{}] verifying credentials...".format(self.trigger))
             #first to check whether users are using old event stream instance
             # if 'messagehub' in self.kafkaAdminUrl:
