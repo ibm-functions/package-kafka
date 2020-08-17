@@ -59,30 +59,24 @@ def trace_leak():
     for i, stat in enumerate(prev.statistics('lineno')[:5], 1):
         logging.info('memory trace app.py top_current' + " " + str(i) + " " + str(stat))
     print ('\n')
-    
     while True:
         time.sleep(1200)
         current = tracemalloc.take_snapshot()
-        
         for i, stat in enumerate(current.statistics('lineno')[:5], 1):
             logging.info('memory trace app.py top_now' + " " + str(i) + " " + str(stat))
-        
         print ('\n')
-
         stats = current.compare_to(prev, 'traceback')
         for i, stat in enumerate(stats[:5], 1):
             logging.info('memory trace app.py incremental' + " " + str(i) + " " + str(stat))
             for line in stat.traceback.format():
                 logging.info('memory trace app.py incremental' + line)
             print('\n')
-        
         totals = current.compare_to(start, 'traceback')
         for i, total in enumerate(totals[:5], 1):
             logging.info('memory trace app.py since_start' + " " + str(i) + " " + str(total))
             for line in total.traceback.format():
                 logging.info('memory trace app.py since_start' + line)
             print('\n')
-
         prev = current
 
 def main():
