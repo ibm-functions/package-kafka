@@ -314,13 +314,11 @@ class ConsumerProcess (Process):
                                 'sasl.password': self.password,
                                 'security.protocol': 'sasl_ssl'
                              })
-            
             if 'messagehub' in self.kafkaAdminUrl:
                 msg = '[{}] references an deprecated event stream instance. Status code {}. Disabling the trigger...'.format(self.trigger, invalid_credential_status_code)
                 logging.info(msg)
                 self.__disableTrigger(invalid_credential_status_code, msg)
                 return None
-
             try:
                 authURL = self.kafkaAdminUrl + '/admin/topics'
                 response = requests.get(authURL, auth=(self.username.lower(), self.password), timeout=60.0, verify=check_ssl)
@@ -343,7 +341,6 @@ class ConsumerProcess (Process):
                 logging.info(msg)
                 self.__disableTrigger(non_existent_topic_status_code, msg)
                 return consumer
-
             consumer.subscribe([self.topic], self.__on_assign, self.__on_revoke)
             logging.info("[{}] Now listening in order to fire trigger".format(self.trigger))
             return consumer
