@@ -58,7 +58,7 @@ def trace_leak():
     start = prev
     while True:
         time.sleep(1200)
-        current = tracemalloc.take_snapshot() 
+        current = tracemalloc.take_snapshot()
         stats = current.compare_to(prev, 'traceback')
         for i, stat in enumerate(stats[:3], 1):
             logging.info('app_incremental ' + str(i) + " " + str(stat))
