@@ -189,15 +189,15 @@ class ConsumerProcess (Process):
             self.encodeKeyAsBase64 = False
 
         if self.isIAMTrigger:
-            retry = True 
-            retry_count = 0 
-            while retry: 
+            retry = True
+            retry_count = 0
+            while retry:
                 try:
                     response = requests.get(self.triggerURL, auth=self.authHandler, timeout=10.0, verify=check_ssl)
                     status_code = response.status_code
                     msg = "[{}] At consumer start up. Repsonse status code {}".format(self.trigger, status_code)
                     logging.info(msg)
-                    if status_code == 200: 
+                    if status_code == 200:
                         retry = False
                     elif self.__shouldDisableDuringConsumerStartUp(status_code):
                         self.__disableTrigger(status_code, msg)
