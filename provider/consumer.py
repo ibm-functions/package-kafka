@@ -411,9 +411,9 @@ class ConsumerProcess (Process):
         return status_code in range(400, 500) and 'x-request-id' in headers and status_code not in [408, 409, 429]
 
     def __shouldDisableDuringConsumerStartUp(self, status_code):
-        if self.isIAMTrigger: 
+        if self.isIAMTrigger:
             return status_code in [401, 403, 404]
-        else: 
+        else:
             return status_code in [404]
 
     def __fireTrigger(self, messages):
