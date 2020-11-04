@@ -451,10 +451,12 @@ class ConsumerProcess (Process):
                     msg = '[{}] Encountered an exception from auth handler, status code {}'.format(self.trigger, e.response.status_code)
                     logging.error(msg)
                     self.__dumpRequestResponse(e.response)
-
-                    if self.__shouldDisable(e.response.status_code, e.response.headers):
-                        retry = False
-                        self.__disableTrigger(e.response.status_code, msg)
+                    if self.isIAMTrigger: 
+                        logging.error(e.response.content.decode())
+                    else:
+                        if self.__shouldDisable(e.response.status_code, e.response.headers):
+                            retry = False
+                            self.__disableTrigger(e.response.status_code, msg)
 
                 if retry:
                     retry_count += 1
