@@ -66,7 +66,7 @@ class Service (Thread):
                     # change could be None because the changes feed will timeout
                     # if it hasn't detected any changes. This timeout allows us to
                     # check whether or not the feed is capable of detecting canary
-                    # documents
+                    # documentss
                     if change != None:
                         self.__handleDocChange(change)
 
