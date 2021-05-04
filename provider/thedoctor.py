@@ -72,7 +72,7 @@ class TheDoctor (Thread):
                             # throw an exception.
                             logging.error('[Doctor][{}] Consumer timed-out, but should be alive! Restarting consumer.'.format(consumerId))
                             consumer.restart()
-                        else
+                        else:
                             logging.error('[Doctor][{}] Consumer timed-out, but cannot restart, because desired state is: {} '.format(consumerId, consumer.desiredState()))
 
                 time.sleep(self.sleepy_time_seconds)
