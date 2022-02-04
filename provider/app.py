@@ -23,7 +23,6 @@ import os
 import tracemalloc
 import time
 import threading
-import multiprocessing
 
 from flask import Flask, jsonify
 from consumercollection import ConsumerCollection
@@ -73,8 +72,6 @@ def trace_leak():
         prev = current
 
 def main():
-    collect_memory_profile = multiprocessing.Process(target=trace_leak)
-    collect_memory_profile.start()
 
     logLevels = {
         "info": logging.INFO,
@@ -112,10 +109,6 @@ def main():
     enable_generic_kafka = (generic_kafka == 'True')
     logging.info('enable_generic_kafka is {} {}'.format(enable_generic_kafka, type(enable_generic_kafka)))
 
-    ################################################################
-    # Exception handling to be able to terminate the collec_memory_profile thread
-    # in case of any arising exceptions during life time of the provider
-    ################################################################
     try:
         global database
         database = Database()
@@ -132,8 +125,15 @@ def main():
         server.serve_forever()
 
     except Exception as ex:
-        collect_memory_profile.terminate()
-        logging.error('The main thread of kafka provider catched an exception: {}'.format(ex) )
+        logging.error('During startup the main thread of kafka provider caught an exception: {}'.format(ex) )
+        
+    ###################################################################
+    # To investigate on memory leaks in kafka provider a tracing
+    # thread is added
+    ###################################################################
+    collect_memory_profile = threading.Thread(target=trace_leak)
+    collect_memory_profile.start()
+
 
 if __name__ == '__main__':
     main()
