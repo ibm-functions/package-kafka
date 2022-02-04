@@ -23,6 +23,7 @@ import os
 import tracemalloc
 import time
 import threading
+import multiprocessing
 
 from flask import Flask, jsonify
 from consumercollection import ConsumerCollection
@@ -72,7 +73,7 @@ def trace_leak():
         prev = current
 
 def main():
-    collect_memory_profile = threading.Thread(target=trace_leak)
+    collect_memory_profile = multiprocessing.Process(target=trace_leak)
     collect_memory_profile.start()
 
     logLevels = {
@@ -111,22 +112,29 @@ def main():
     enable_generic_kafka = (generic_kafka == 'True')
     logging.info('enable_generic_kafka is {} {}'.format(enable_generic_kafka, type(enable_generic_kafka)))
 
-    global database
-    database = Database()
-    database.migrate()
+    ################################################################
+    # Exception handling to be able to terminate the collec_memory_profile thread
+    # in case of any arising exceptions during life time of the provider 
+    ################################################################
+    try:
+        global database
+        database = Database()
+        database.migrate()
 
-    TheDoctor(consumers).start()
+        TheDoctor(consumers).start()
 
-    global feedService
-    feedService = Service(consumers)
-    feedService.start()
+        global feedService
+        feedService = Service(consumers)
+        feedService.start()
 
-    port = int(os.getenv('PORT', 5000))
-    server = WSGIServer(('', port), app, log=logging.getLogger())
-    server.serve_forever()
+        port = int(os.getenv('PORT', 5000))
+        server = WSGIServer(('', port), app, log=logging.getLogger())
+        server.serve_forever()
 
-
-
+    except Exception as ex:
+        collect_memory_profile.terminate()   
+        logging.error('The main thread of kafka provider catched an exception: {}'.format(ex) )
+       
 
 if __name__ == '__main__':
     main()
