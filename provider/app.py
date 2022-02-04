@@ -72,8 +72,6 @@ def trace_leak():
         prev = current
 
 def main():
-    collect_memory_profile = threading.Thread(target=trace_leak)
-    collect_memory_profile.start()
 
     logLevels = {
         "info": logging.INFO,
@@ -111,21 +109,30 @@ def main():
     enable_generic_kafka = (generic_kafka == 'True')
     logging.info('enable_generic_kafka is {} {}'.format(enable_generic_kafka, type(enable_generic_kafka)))
 
-    global database
-    database = Database()
-    database.migrate()
+    try:
+        global database
+        database = Database()
+        database.migrate()
 
-    TheDoctor(consumers).start()
+        TheDoctor(consumers).start()
 
-    global feedService
-    feedService = Service(consumers)
-    feedService.start()
+        global feedService
+        feedService = Service(consumers)
+        feedService.start()
 
-    port = int(os.getenv('PORT', 5000))
-    server = WSGIServer(('', port), app, log=logging.getLogger())
-    server.serve_forever()
+        port = int(os.getenv('PORT', 5000))
+        server = WSGIServer(('', port), app, log=logging.getLogger())
+        server.serve_forever()
 
+    except Exception as ex:
+        logging.error('During startup the main thread of kafka provider caught an exception: {}'.format(ex) )
 
+    ###################################################################
+    # To investigate on memory leaks in kafka provider a tracing
+    # thread is added
+    ###################################################################
+    collect_memory_profile = threading.Thread(target=trace_leak)
+    collect_memory_profile.start()
 
 
 if __name__ == '__main__':
