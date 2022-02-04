@@ -139,6 +139,6 @@ def main():
     # run HTTP server functionality in main thread
     ############################################
     server.serve_forever()
-    
+
 if __name__ == '__main__':
     main()
