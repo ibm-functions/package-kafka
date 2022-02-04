@@ -126,7 +126,7 @@ def main():
 
     except Exception as ex:
         logging.error('During startup the main thread of kafka provider caught an exception: {}'.format(ex) )
-        
+
     ###################################################################
     # To investigate on memory leaks in kafka provider a tracing
     # thread is added
