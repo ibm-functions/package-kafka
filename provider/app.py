@@ -114,7 +114,7 @@ def main():
 
     ################################################################
     # Exception handling to be able to terminate the collec_memory_profile thread
-    # in case of any arising exceptions during life time of the provider 
+    # in case of any arising exceptions during life time of the provider
     ################################################################
     try:
         global database
@@ -132,9 +132,8 @@ def main():
         server.serve_forever()
 
     except Exception as ex:
-        collect_memory_profile.terminate()   
+        collect_memory_profile.terminate()
         logging.error('The main thread of kafka provider catched an exception: {}'.format(ex) )
-       
 
 if __name__ == '__main__':
     main()
