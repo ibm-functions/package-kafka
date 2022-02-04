@@ -23,6 +23,7 @@ import os
 import tracemalloc
 import time
 import threading
+import sys
 
 from flask import Flask, jsonify
 from consumercollection import ConsumerCollection
@@ -126,6 +127,7 @@ def main():
 
     except Exception as ex:
         logging.error('During startup the main thread of kafka provider caught an exception: {}'.format(ex) )
+        sys.exit()
 
     ###################################################################
     # To investigate on memory leaks in kafka provider a tracing
