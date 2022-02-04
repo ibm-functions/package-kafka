@@ -123,8 +123,8 @@ def main():
 
         port = int(os.getenv('PORT', 5000))
         server = WSGIServer(('', port), app, log=logging.getLogger())
-        
     except Exception as ex:
+
         logging.error('During startup the main thread of kafka provider caught an exception: {}'.format(ex) )
         sys.exit()
 
