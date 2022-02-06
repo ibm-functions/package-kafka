@@ -23,6 +23,7 @@ import os
 import tracemalloc
 import time
 import threading
+import sys
 
 from flask import Flask, jsonify
 from consumercollection import ConsumerCollection
@@ -122,10 +123,10 @@ def main():
 
         port = int(os.getenv('PORT', 5000))
         server = WSGIServer(('', port), app, log=logging.getLogger())
-        server.serve_forever()
-
     except Exception as ex:
+
         logging.error('During startup the main thread of kafka provider caught an exception: {}'.format(ex) )
+        sys.exit()
 
     ###################################################################
     # To investigate on memory leaks in kafka provider a tracing
@@ -134,6 +135,10 @@ def main():
     collect_memory_profile = threading.Thread(target=trace_leak)
     collect_memory_profile.start()
 
+    ############################################
+    # run HTTP server functionality in main thread
+    ############################################
+    server.serve_forever()
 
 if __name__ == '__main__':
     main()
