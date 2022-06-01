@@ -103,7 +103,7 @@ class BasicHealthTest
       // Check if the trigger, that should have been created as reaction on the kafka-message, has been created.
       // The trigger should have been created by the action, that has been triggered by the kafka message.
       // If we cannot find it, the most probably the action did not run.
-      retry(wsk.trigger.get(verificationName), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName), 60, Some(1.second), logException = false)
   }
 
   it should "return correct status and configuration" in withAssetCleaner(wskprops) {

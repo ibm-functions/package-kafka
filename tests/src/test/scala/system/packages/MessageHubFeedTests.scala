@@ -150,7 +150,7 @@ class MessageHubFeedTests
       }
 
       produceMessage(topic, key, verificationName)
-      retry(wsk.trigger.get(verificationName), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName), 60, Some(1.second), logException = false)
 
       wsk.trigger.delete(verificationName, expectedExitCode = SUCCESS_EXIT)
       wsk.trigger.delete(triggerName, expectedExitCode = SUCCESS_EXIT)
@@ -168,7 +168,7 @@ class MessageHubFeedTests
       consumerExists(uuid)
 
       produceMessage(topic, key, verificationName)
-      retry(wsk.trigger.get(verificationName), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName), 60, Some(1.second), logException = false)
   }
 
   it should "fire multiple triggers for two large payloads" in withAssetCleaner(wskprops) {
@@ -220,8 +220,8 @@ class MessageHubFeedTests
       producer.send(firstMessage)
       producer.send(secondMessage)
       producer.close()
-      retry(wsk.trigger.get(verificationName1), 60, Some(1.second))
-      retry(wsk.trigger.get(verificationName2), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName1), 60, Some(1.second), logException = false)
+      retry(wsk.trigger.get(verificationName2), 60, Some(1.second), logException = false)
   }
 
   it should "not fire a trigger for a single oversized message" in withAssetCleaner(wskprops) {
@@ -260,7 +260,7 @@ class MessageHubFeedTests
 
       // The producer will generate an error as the payload size is too large for the MessageHub brokers
       a[ExecutionException] should be thrownBy produceMessage(topic, verificationName, generateMessage(s"${currentTime}", testPayloadSize))
-      a[Exception] should be thrownBy retry(wsk.trigger.get(verificationName), 60, Some(1.second))
+      a[Exception] should be thrownBy retry(wsk.trigger.get(verificationName), 60, Some(1.second), logException = false)
   }
 
   it should "reject trigger update without passing in any updatable parameters" in withAssetCleaner(wskprops) {
@@ -443,7 +443,7 @@ class MessageHubFeedTests
       }
 
       produceMessage(topic, key, verificationName1)
-      retry(wsk.trigger.get(verificationName1), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName1), 60, Some(1.second), logException = false)
 
       println("Updating trigger")
 
@@ -473,7 +473,7 @@ class MessageHubFeedTests
       consumerExists(uuid)
 
       produceMessage(topic, key, verificationName2)
-      retry(wsk.trigger.get(verificationName2), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName2), 60, Some(1.second), logException = false)
   }
 
   it should "create a trigger with __bx_creds and fire a trigger when a message is posted to message hub" in withAssetCleaner(wskprops) {
@@ -513,7 +513,7 @@ class MessageHubFeedTests
       println("Giving the consumer a moment to get ready")
       Thread.sleep(consumerInitTime)
       produceMessage(topic, key, verificationName1)
-      retry(wsk.trigger.get(verificationName1), 60, Some(1.second))
+      retry(wsk.trigger.get(verificationName1), 60, Some(1.second), logException = false)
   }
 
   def generateMessage(prefix: String, size: Int): String = {
