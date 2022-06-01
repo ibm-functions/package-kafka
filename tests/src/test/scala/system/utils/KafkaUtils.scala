@@ -122,7 +122,7 @@ trait KafkaUtils extends TestHelpers with WskTestHelpers {
     }
 
     def produceMessage(topic: String, key: String, value: String) = {
-        println(s"Producing message with key: $key and value: $value")
+        println(s"Producing message with key: $key and value: ${value.slice(0,100)}(len:${value.length})")
         val producer = createProducer()
         val record = new ProducerRecord(topic, key, value)
         val future = producer.send(record)

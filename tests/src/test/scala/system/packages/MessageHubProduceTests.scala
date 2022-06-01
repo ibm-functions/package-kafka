@@ -169,7 +169,7 @@ class MessageHubProduceTests
                 _.response.success shouldBe true
             }
 
-            retry(wsk.trigger.get(verificationName), 60, Some(1.second))
+            retry(wsk.trigger.get(verificationName), 60, Some(1.second), logException = false)
     }
 
     it should "Post a message with a binary key" in withAssetCleaner(wskprops) {
@@ -213,6 +213,6 @@ class MessageHubProduceTests
                 _.response.success shouldBe true
             }
 
-            retry(wsk.trigger.get(verificationName), 60, Some(1.second))
+            retry(wsk.trigger.get(verificationName), 60, Some(1.second), logException = false)
     }
 }
