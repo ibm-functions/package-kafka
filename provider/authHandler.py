@@ -23,6 +23,24 @@ import time
 
 from requests.auth import AuthBase
 
+###############################################################
+# 12/12/22 : Fixing IAM token handling logic, because of 
+#            refreshToken life-time reduction from 30d to 3d
+#
+# IAMAuth handler class is used as external authentication for request python lib 
+# 
+# Each time a HTTP call to the IBM Cloud functions service is done the __call__ 
+# method of this class is called. The caller expects to get a valid AUTH-Token as result
+# 
+# AUTH-TOKEN  is requested from IBM IAM service using the __requestToken() method which 
+#             is providing the iamApiKey as input and gets an valid access-token with a 
+#             life-time ( currently 1 hour). As long as the access-token is not expired 
+#             the last retrieved value is still used. 
+#             On __isTokenExpired  a new access-token is requested using the api-key.
+#
+#    Comment: refresh token usage is removed with the fix of 12/12/22
+######################################################################
+
 class AuthHandlerException(Exception):
     def __init__(self, response):
         self.response = response
@@ -39,15 +57,9 @@ class IAMAuth(AuthBase):
         return r
 
     def __getToken(self):
-        if 'expires_in' not in self.tokenInfo or self.__isRefreshTokenExpired():
+        ## if not already an access-token is retrieved or the current one is expired, get a new one using the iamApiKey 
+        if 'expires_in' not in self.tokenInfo or self.__isTokenExpired():
             response = self.__requestToken()
-            if response.ok and 'access_token' in response.json():
-                self.tokenInfo = response.json()
-                return self.tokenInfo['access_token']
-            else:
-                raise AuthHandlerException(response)
-        elif self.__isTokenExpired():
-            response = self.__refreshToken()
             if response.ok and 'access_token' in response.json():
                 self.tokenInfo = response.json()
                 return self.tokenInfo['access_token']
@@ -68,19 +80,6 @@ class IAMAuth(AuthBase):
 
         return self.__sendRequest(payload, headers)
 
-    def __refreshToken(self):
-        headers = {
-            'Content-type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic Yng6Yng='
-        }
-        payload = {
-            'grant_type': 'refresh_token',
-            'refresh_token': self.tokenInfo['refresh_token']
-        }
-
-        return self.__sendRequest(payload, headers)
-
-
     def __isTokenExpired(self):
         if 'expires_in' not in self.tokenInfo or 'expiration' not in self.tokenInfo:
             return True
@@ -92,16 +91,6 @@ class IAMAuth(AuthBase):
         refreshTime = expireTime - (timeToLive * (1.0 - fractionOfTtl))
 
         return refreshTime < currentTime
-
-    def __isRefreshTokenExpired(self):
-        if 'expiration' not in self.tokenInfo:
-            return True
-
-        sevenDays = 7 * 24 * 3600
-        currentTime = int(time.time())
-        newTokenTime = self.tokenInfo['expiration'] + sevenDays
-
-        return newTokenTime < currentTime
 
     def __sendRequest(self, payload, headers):
         response = requests.post(self.endpoint, data=payload, headers=headers)
