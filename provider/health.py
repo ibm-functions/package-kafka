@@ -44,7 +44,7 @@ def getSwapMemory():
 
 
 def getVirtualMemory():
-    total, available, percent, used, free, active, inactive, buffers, cached, shared = psutil.virtual_memory()
+    total, available, percent, used, free, active, inactive, buffers, cached, shared, _ = psutil.virtual_memory()
     virtual_memory = {}
     virtual_memory['total'] = '%d MB' % (total / MEGABYTE)
     virtual_memory['available'] = '%d MB' % (available / MEGABYTE)
