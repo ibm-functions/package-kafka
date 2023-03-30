@@ -49,8 +49,8 @@ cd $HOMEDIR
 git clone https://github.com/apache/openwhisk.git openwhisk
 cd $WHISKDIR
 
-TERM=dumb ./gradlew \
-:common:scala:install \
-:core:controller:install \
-:core:invoker:install \
-:tests:install
+# TERM=dumb ./gradlew \
+# :common:scala:install \
+# :core:controller:install \
+# :core:invoker:install \
+# :tests:install
