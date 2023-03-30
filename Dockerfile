@@ -46,6 +46,7 @@ ENV GENERIC_KAFKA True
 
 RUN mkdir -p /KafkaFeedProvider
 ADD provider/*.py /KafkaFeedProvider/
+RUN ls -lart /KafkaFeedProvider/
 
 # Automatically curl the health endpoint every 5 minutes.
 # If the endpoint doesn't respond within 30 seconds, kill the main python process.
