@@ -38,7 +38,7 @@ sudo apt-get -y install python-pip
 pip install --user jsonschema
 
 # Ansible
-pip install --user ansible==2.1.2.0
+# pip install --user ansible==2.1.2.0
 
 # clone OpenWhisk repo. in order to run scanCode.py
 cd $HOMEDIR
