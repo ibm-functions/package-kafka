@@ -39,13 +39,14 @@ ENV LD_LIBRARY_PATH /usr/local/lib
 RUN pip install gevent==20.9.0 greenlet==1.1.3 flask==2.1.1 confluent-kafka==${LIBRDKAFKA_VERSION} \
     requests==2.10.0 cloudant==2.5.0 psutil==5.9.4 pycryptodome==3.9.8  itsdangerous==2.0.1
 # while I expect these will be overridden during deployment, we might as well
-# set reasonable defaults
+# set reasonable defaults 
 ENV PORT 5000
 ENV LOCAL_DEV False
 ENV GENERIC_KAFKA True
 
 RUN mkdir -p /KafkaFeedProvider
 ADD provider/*.py /KafkaFeedProvider/
+RUN ls -lart /KafkaFeedProvider/
 
 # Automatically curl the health endpoint every 5 minutes.
 # If the endpoint doesn't respond within 30 seconds, kill the main python process.
