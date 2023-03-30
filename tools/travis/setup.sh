@@ -24,7 +24,7 @@ WHISKDIR="$HOMEDIR/openwhisk"
 sudo gpasswd -a travis docker
 sudo -E bash -c 'echo '\''DOCKER_OPTS="-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock --api-enable-cors --storage-driver=aufs"'\'' > /etc/default/docker'
 
-Docker
+# Docker
 sudo apt-get -y update -qq
 sudo apt-get -o Dpkg::Options::="--force-confold" --force-yes -y install docker-engine=1.12.0-0~trusty
 sudo service docker restart
