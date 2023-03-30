@@ -34,8 +34,8 @@ WHISKDIR="$HOMEDIR/openwhisk"
  docker info
 
 # Python
-sudo apt-get -y install python-pip
-pip install --user jsonschema
+# sudo apt-get -y install python-pip
+# pip install --user jsonschema
 
 # Ansible
 # pip install --user ansible==2.1.2.0
